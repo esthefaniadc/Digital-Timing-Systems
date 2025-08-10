@@ -1,6 +1,7 @@
 #include "lcd_p1.h"
 #include "keypad_p1.h"
 #include "pulsador_p1.h"
+#include "cronometro.h"
 
 #define MODO_CRONOMETRO     0
 #define MODO_TEMPORIZADOR   1
@@ -14,19 +15,16 @@ void mostrar_modo(unsigned char modo) {
     Lcd_Cmd(_LCD_CLEAR);
     switch(modo) {
         case MODO_CRONOMETRO:
-            Lcd_Out(1,1,"Modo: Cronometro");
+            Lcd_Out(1,1," Cronometro");
             break;
         case MODO_TEMPORIZADOR:
-            Lcd_Out(1,1,"Modo: Temporizador");
+            Lcd_Out(1,1," Temporizador");
             break;
         case MODO_FRECUENCIMETRO:
-            Lcd_Out(1,1,"Modo: Frec.Metro");
+            Lcd_Out(1,1," Frecuencimetro");
             break;
     }
-    if(conteo_activo)
-        Lcd_Out(2,1,"En ejecucion...");
-    else
-        Lcd_Out(2,1,"RC2:Start/Stop");
+    Lcd_Out(2,1," "); // Limpia segunda línea
 }
 
 void main() {
@@ -50,17 +48,20 @@ void main() {
     conteo_activo = 0;
     modo_actual = MODO_CRONOMETRO;
 
+    // Inicialización de cronómetro
+    Cronometro_Init();
+
     // Mensaje de bienvenida
     Lcd_Cmd(_LCD_CLEAR);
-    Lcd_Out(1,1,"Presione O (ON)");
+    Lcd_Out(1,1," Presione O (ON)");
     Lcd_Out(2,1,"para iniciar");
 
     // Espera hasta que se presione y suelte 'O'
     while(!sistema_on) {
         tecla = leer_teclado();
         if (tecla == 'O') {
-            Delay_ms(20);                 // debounce
-            while (leer_teclado() == 'O'); // esperar liberación
+            Delay_ms(20);
+            while (leer_teclado() == 'O');
             sistema_on = 1;
             LATC.F0 = 1; // Activo alto: ya seleccionó una opción
             mostrar_modo(modo_actual);
@@ -75,33 +76,42 @@ void main() {
             modo_actual++;
             if (modo_actual > MODO_FRECUENCIMETRO)
                 modo_actual = MODO_CRONOMETRO;
+            conteo_activo = 0;
             mostrar_modo(modo_actual);
+
+            // Reinicia cronómetro al cambiar de modo
+            if(modo_actual == MODO_CRONOMETRO) {
+                Cronometro_Reset();
+            }
             Delay_ms(120);
         }
 
-        // Iniciar/detener con RC2
+        // Iniciar/detener con RC2 (pulsador físico)
         if (Pulsador_Start_Presionado()) {
             conteo_activo = !conteo_activo;
             mostrar_modo(modo_actual);
             Delay_ms(120);
         }
 
-        // Aquí iría la lógica de cada modo
-        if (conteo_activo) {
-            switch (modo_actual) {
-                case MODO_CRONOMETRO:
-                    // TODO: lógica cronómetro
-                    break;
-                case MODO_TEMPORIZADOR:
-                    // TODO: lógica temporizador
-                    break;
-                case MODO_FRECUENCIMETRO:
-                    // TODO: lógica frecuencímetro
-                    break;
-            }
+        // Iniciar/detener con '0' del keypad en modo cronómetro
+        tecla = leer_teclado();
+        if (modo_actual == MODO_CRONOMETRO && tecla == '0') {
+            conteo_activo = !conteo_activo;
+            mostrar_modo(modo_actual);
+            Delay_ms(200);
+            while(leer_teclado() == '0');
         }
 
-        // Si quieres permitir volver al modo selección con 'O':
+        // Lógica de cada modo
+        if(modo_actual == MODO_CRONOMETRO) {
+            if(conteo_activo) {
+                Cronometro_Tick();
+            }
+            Cronometro_Mostrar();
+        }
+        // (Temporizador y frecuencímetro se implementarán después)
+
+        // Permitir volver a modo selección con 'O'
         tecla = leer_teclado();
         if (tecla == 'O') {
             Delay_ms(20);
@@ -110,22 +120,21 @@ void main() {
             conteo_activo = 0;
             LATC.F0 = 0; // Activo bajo: vuelve a modo selección
             Lcd_Cmd(_LCD_CLEAR);
-            Lcd_Out(1,1,"Presione O (ON)");
+            Lcd_Out(1,1," Presione O (ON)");
             Lcd_Out(2,1,"para iniciar");
-            // Espera nuevo ON
             while(!sistema_on) {
                 tecla = leer_teclado();
                 if (tecla == 'O') {
                     Delay_ms(20);
                     while (leer_teclado() == 'O');
                     sistema_on = 1;
-                    LATC.F0 = 1; // Activo alto: ya seleccionó una opción
+                    LATC.F0 = 1; // Activo alto
                     mostrar_modo(modo_actual);
                     Delay_ms(300);
                 }
             }
         }
 
-        Delay_ms(10); // evitar uso excesivo de CPU
+        Delay_ms(10); // periodo base del sistema (~10ms)
     }
 }

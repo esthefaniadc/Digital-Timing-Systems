@@ -9,6 +9,7 @@ main
 			Delay_5500us
 			Delay_50us
 	Pulsadores_P1_Init
+	Cronometro_Init
 	Lcd_Cmd
 		Delay_1us
 		Delay_5500us
@@ -40,4 +41,19 @@ main
 					Delay_5500us
 					Delay_50us
 	Pulsador_Modo_Presionado
+	Cronometro_Reset
 	Pulsador_Start_Presionado
+	Cronometro_Tick
+	Cronometro_Mostrar
+		ByteToStrWithZeros
+			Div_8X8_U
+		Lcd_Out
+			Lcd_Cmd
+				Delay_1us
+				Delay_5500us
+				Delay_50us
+			Lcd_Chr_CP
+				Lcd_Cmd
+					Delay_1us
+					Delay_5500us
+					Delay_50us

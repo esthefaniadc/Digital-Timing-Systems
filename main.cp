@@ -104,7 +104,71 @@ char Pulsador_Start_Presionado() {
  prev_start =  PORTC.F2 ;
  return pressed;
 }
-#line 9 "C:/Esthefanía MG/Documentos/UNIVERSITY FOLDERS/NOW/OneDrive - uc.edu.ve/NOW/DISEÑO DIGITAL/Prácticas/P1/Versión1/MikroC For PIC/main.c"
+#line 1 "c:/esthefanía mg/documentos/university folders/now/onedrive - uc.edu.ve/now/diseÑo digital/prácticas/p1/versión1/mikroc for pic/cronometro.h"
+
+
+
+
+static unsigned char minutos = 0;
+static unsigned char segundos = 0;
+static unsigned char decimas = 0;
+
+
+void Cronometro_Init() {
+ minutos = 0;
+ segundos = 0;
+ decimas = 0;
+}
+
+
+void Cronometro_Reset() {
+ minutos = 0;
+ segundos = 0;
+ decimas = 0;
+}
+
+
+
+void Cronometro_Tick() {
+ static unsigned char ms10_count = 0;
+ ms10_count++;
+ if(ms10_count >= 10) {
+ ms10_count = 0;
+ decimas++;
+ if(decimas >= 10) {
+ decimas = 0;
+ segundos++;
+ if(segundos >= 60) {
+ segundos = 0;
+ minutos++;
+ if(minutos >= 100) {
+ minutos = 0;
+ }
+ }
+ }
+ }
+}
+
+
+void Cronometro_Mostrar() {
+ char buffer[9];
+ char minStr[4], segStr[4];
+
+ ByteToStrWithZeros(minutos, minStr);
+ ByteToStrWithZeros(segundos, segStr);
+
+ buffer[0] = minStr[1];
+ buffer[1] = minStr[2];
+ buffer[2] = ':';
+ buffer[3] = segStr[1];
+ buffer[4] = segStr[2];
+ buffer[5] = '.';
+ buffer[6] = decimas + '0';
+ buffer[7] = 0;
+
+ Lcd_Out(2,1,buffer);
+}
+#line 10 "C:/Esthefanía MG/Documentos/UNIVERSITY FOLDERS/NOW/OneDrive - uc.edu.ve/NOW/DISEÑO DIGITAL/Prácticas/P1/Versión1/MikroC For PIC/main.c"
 unsigned char modo_actual;
 bit sistema_on;
 bit conteo_activo;
@@ -113,19 +177,16 @@ void mostrar_modo(unsigned char modo) {
  Lcd_Cmd(_LCD_CLEAR);
  switch(modo) {
  case  0 :
- Lcd_Out(1,1,"Modo: Cronometro");
+ Lcd_Out(1,1," Cronometro");
  break;
  case  1 :
- Lcd_Out(1,1,"Modo: Temporizador");
+ Lcd_Out(1,1," Temporizador");
  break;
  case  2 :
- Lcd_Out(1,1,"Modo: Frec.Metro");
+ Lcd_Out(1,1," Frecuencimetro");
  break;
  }
- if(conteo_activo)
- Lcd_Out(2,1,"En ejecucion...");
- else
- Lcd_Out(2,1,"RC2:Start/Stop");
+ Lcd_Out(2,1," ");
 }
 
 void main() {
@@ -150,8 +211,11 @@ void main() {
  modo_actual =  0 ;
 
 
+ Cronometro_Init();
+
+
  Lcd_Cmd(_LCD_CLEAR);
- Lcd_Out(1,1,"Presione O (ON)");
+ Lcd_Out(1,1," Presione O (ON)");
  Lcd_Out(2,1,"para iniciar");
 
 
@@ -174,7 +238,13 @@ void main() {
  modo_actual++;
  if (modo_actual >  2 )
  modo_actual =  0 ;
+ conteo_activo = 0;
  mostrar_modo(modo_actual);
+
+
+ if(modo_actual ==  0 ) {
+ Cronometro_Reset();
+ }
  Delay_ms(120);
  }
 
@@ -186,19 +256,22 @@ void main() {
  }
 
 
- if (conteo_activo) {
- switch (modo_actual) {
- case  0 :
-
- break;
- case  1 :
-
- break;
- case  2 :
-
- break;
+ tecla = leer_teclado();
+ if (modo_actual ==  0  && tecla == '0') {
+ conteo_activo = !conteo_activo;
+ mostrar_modo(modo_actual);
+ Delay_ms(200);
+ while(leer_teclado() == '0');
  }
+
+
+ if(modo_actual ==  0 ) {
+ if(conteo_activo) {
+ Cronometro_Tick();
  }
+ Cronometro_Mostrar();
+ }
+
 
 
  tecla = leer_teclado();
@@ -209,9 +282,8 @@ void main() {
  conteo_activo = 0;
  LATC.F0 = 0;
  Lcd_Cmd(_LCD_CLEAR);
- Lcd_Out(1,1,"Presione O (ON)");
+ Lcd_Out(1,1," Presione O (ON)");
  Lcd_Out(2,1,"para iniciar");
-
  while(!sistema_on) {
  tecla = leer_teclado();
  if (tecla == 'O') {

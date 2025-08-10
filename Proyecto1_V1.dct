@@ -1415,6 +1415,10 @@ crcxorh
 crcxorl
 cren
 cren_bit
+cronometro_init
+cronometro_mostrar
+cronometro_reset
+cronometro_tick
 csrc
 csrc_bit
 cswhold
