@@ -137,6 +137,10 @@ void main() {
  ANSELC = 0x00;
 
 
+ TRISC.F0 = 0;
+ LATC.F0 = 0;
+
+
  LCD_P1_Init();
  Pulsadores_P1_Init();
 
@@ -157,6 +161,7 @@ void main() {
  Delay_ms(20);
  while (leer_teclado() == 'O');
  sistema_on = 1;
+ LATC.F0 = 1;
  mostrar_modo(modo_actual);
  Delay_ms(300);
  }
@@ -192,6 +197,31 @@ void main() {
  case  2 :
 
  break;
+ }
+ }
+
+
+ tecla = leer_teclado();
+ if (tecla == 'O') {
+ Delay_ms(20);
+ while (leer_teclado() == 'O');
+ sistema_on = 0;
+ conteo_activo = 0;
+ LATC.F0 = 0;
+ Lcd_Cmd(_LCD_CLEAR);
+ Lcd_Out(1,1,"Presione O (ON)");
+ Lcd_Out(2,1,"para iniciar");
+
+ while(!sistema_on) {
+ tecla = leer_teclado();
+ if (tecla == 'O') {
+ Delay_ms(20);
+ while (leer_teclado() == 'O');
+ sistema_on = 1;
+ LATC.F0 = 1;
+ mostrar_modo(modo_actual);
+ Delay_ms(300);
+ }
  }
  }
 

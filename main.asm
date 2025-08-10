@@ -42,13 +42,13 @@ L_leer_teclado0:
 	MOVLW      1
 	MOVWF      R0
 	MOVF       R1, 0
-L__leer_teclado52:
+L__leer_teclado63:
 	BTFSC      STATUS+0, 2
-	GOTO       L__leer_teclado53
+	GOTO       L__leer_teclado64
 	LSLF       R0, 1
 	ADDLW      255
-	GOTO       L__leer_teclado52
-L__leer_teclado53:
+	GOTO       L__leer_teclado63
+L__leer_teclado64:
 	COMF       R0, 1
 	MOVF       R0, 0
 	ANDWF      LATB+0, 1
@@ -79,14 +79,14 @@ L_leer_teclado3:
 	MOVLW      0
 	MOVWF      R1
 	MOVF       R2, 0
-L__leer_teclado54:
+L__leer_teclado65:
 	BTFSC      STATUS+0, 2
-	GOTO       L__leer_teclado55
+	GOTO       L__leer_teclado66
 	LSLF       R0, 1
 	RLF        R1, 1
 	ADDLW      255
-	GOTO       L__leer_teclado54
-L__leer_teclado55:
+	GOTO       L__leer_teclado65
+L__leer_teclado66:
 	MOVF       PORTB+0, 0
 	ANDWF      R0, 1
 	MOVLW      0
@@ -110,14 +110,14 @@ L_leer_teclado7:
 	MOVLW      0
 	MOVWF      R1
 	MOVF       R2, 0
-L__leer_teclado56:
+L__leer_teclado67:
 	BTFSC      STATUS+0, 2
-	GOTO       L__leer_teclado57
+	GOTO       L__leer_teclado68
 	LSLF       R0, 1
 	RLF        R1, 1
 	ADDLW      255
-	GOTO       L__leer_teclado56
-L__leer_teclado57:
+	GOTO       L__leer_teclado67
+L__leer_teclado68:
 	MOVF       PORTB+0, 0
 	ANDWF      R0, 1
 	MOVLW      0
@@ -218,7 +218,7 @@ _Pulsador_Modo_Presionado:
 	GOTO       L_Pulsador_Modo_Presionado12
 	BTFSC      PORTC+0, 1
 	GOTO       L_Pulsador_Modo_Presionado12
-L__Pulsador_Modo_Presionado48:
+L__Pulsador_Modo_Presionado59:
 ;pulsador_p1.h,27 :: 		Delay_ms(20); // debounce
 	MOVLW      7
 	MOVWF      R12
@@ -262,7 +262,7 @@ _Pulsador_Start_Presionado:
 	GOTO       L_Pulsador_Start_Presionado17
 	BTFSC      PORTC+0, 2
 	GOTO       L_Pulsador_Start_Presionado17
-L__Pulsador_Start_Presionado49:
+L__Pulsador_Start_Presionado60:
 ;pulsador_p1.h,37 :: 		Delay_ms(20); // debounce
 	MOVLW      7
 	MOVWF      R12
@@ -400,21 +400,25 @@ _main:
 	CLRF       ANSELD+0
 ;main.c,38 :: 		ANSELC = 0x00; // Pulsadores digitales
 	CLRF       ANSELC+0
-;main.c,41 :: 		LCD_P1_Init();
+;main.c,41 :: 		TRISC.F0 = 0; // RC0 salida
+	BCF        TRISC+0, 0
+;main.c,42 :: 		LATC.F0 = 0;  // Activo bajo: en pantalla de selección
+	BCF        LATC+0, 0
+;main.c,45 :: 		LCD_P1_Init();
 	CALL       _LCD_P1_Init+0
-;main.c,42 :: 		Pulsadores_P1_Init();
+;main.c,46 :: 		Pulsadores_P1_Init();
 	CALL       _Pulsadores_P1_Init+0
-;main.c,45 :: 		sistema_on = 0;
+;main.c,49 :: 		sistema_on = 0;
 	BCF        _sistema_on+0, BitPos(_sistema_on+0)
-;main.c,46 :: 		conteo_activo = 0;
+;main.c,50 :: 		conteo_activo = 0;
 	BCF        _conteo_activo+0, BitPos(_conteo_activo+0)
-;main.c,47 :: 		modo_actual = MODO_CRONOMETRO;
+;main.c,51 :: 		modo_actual = MODO_CRONOMETRO;
 	CLRF       _modo_actual+0
-;main.c,50 :: 		Lcd_Cmd(_LCD_CLEAR);
+;main.c,54 :: 		Lcd_Cmd(_LCD_CLEAR);
 	MOVLW      1
 	MOVWF      FARG_Lcd_Cmd_out_char+0
 	CALL       _Lcd_Cmd+0
-;main.c,51 :: 		Lcd_Out(1,1,"Presione O (ON)");
+;main.c,55 :: 		Lcd_Out(1,1,"Presione O (ON)");
 	MOVLW      1
 	MOVWF      FARG_Lcd_Out_row+0
 	MOVLW      1
@@ -424,7 +428,7 @@ _main:
 	MOVLW      hi_addr(?lstr6_main+0)
 	MOVWF      FARG_Lcd_Out_text+1
 	CALL       _Lcd_Out+0
-;main.c,52 :: 		Lcd_Out(2,1,"para iniciar");
+;main.c,56 :: 		Lcd_Out(2,1,"para iniciar");
 	MOVLW      2
 	MOVWF      FARG_Lcd_Out_row+0
 	MOVLW      1
@@ -434,18 +438,18 @@ _main:
 	MOVLW      hi_addr(?lstr7_main+0)
 	MOVWF      FARG_Lcd_Out_text+1
 	CALL       _Lcd_Out+0
-;main.c,55 :: 		while(!sistema_on) {
+;main.c,59 :: 		while(!sistema_on) {
 L_main27:
 	BTFSC      _sistema_on+0, BitPos(_sistema_on+0)
 	GOTO       L_main28
-;main.c,56 :: 		tecla = leer_teclado();
+;main.c,60 :: 		tecla = leer_teclado();
 	CALL       _leer_teclado+0
-;main.c,57 :: 		if (tecla == 'O') {
+;main.c,61 :: 		if (tecla == 'O') {
 	MOVF       R0, 0
 	XORLW      79
 	BTFSS      STATUS+0, 2
 	GOTO       L_main29
-;main.c,58 :: 		Delay_ms(20);                 // debounce
+;main.c,62 :: 		Delay_ms(20);                 // debounce
 	MOVLW      7
 	MOVWF      R12
 	MOVLW      125
@@ -455,7 +459,7 @@ L_main30:
 	GOTO       L_main30
 	DECFSZ     R12, 1
 	GOTO       L_main30
-;main.c,59 :: 		while (leer_teclado() == 'O'); // esperar liberación
+;main.c,63 :: 		while (leer_teclado() == 'O'); // esperar liberación
 L_main31:
 	CALL       _leer_teclado+0
 	MOVF       R0, 0
@@ -464,13 +468,15 @@ L_main31:
 	GOTO       L_main32
 	GOTO       L_main31
 L_main32:
-;main.c,60 :: 		sistema_on = 1;
+;main.c,64 :: 		sistema_on = 1;
 	BSF        _sistema_on+0, BitPos(_sistema_on+0)
-;main.c,61 :: 		mostrar_modo(modo_actual);
+;main.c,65 :: 		LATC.F0 = 1; // Activo alto: ya seleccionó una opción
+	BSF        LATC+0, 0
+;main.c,66 :: 		mostrar_modo(modo_actual);
 	MOVF       _modo_actual+0, 0
 	MOVWF      FARG_mostrar_modo_modo+0
 	CALL       _mostrar_modo+0
-;main.c,62 :: 		Delay_ms(300);
+;main.c,67 :: 		Delay_ms(300);
 	MOVLW      98
 	MOVWF      R12
 	MOVLW      101
@@ -482,33 +488,33 @@ L_main33:
 	GOTO       L_main33
 	NOP
 	NOP
-;main.c,63 :: 		}
+;main.c,68 :: 		}
 L_main29:
-;main.c,64 :: 		}
+;main.c,69 :: 		}
 	GOTO       L_main27
 L_main28:
-;main.c,67 :: 		while(1) {
+;main.c,72 :: 		while(1) {
 L_main34:
-;main.c,69 :: 		if (Pulsador_Modo_Presionado()) {
+;main.c,74 :: 		if (Pulsador_Modo_Presionado()) {
 	CALL       _Pulsador_Modo_Presionado+0
 	MOVF       R0, 0
 	BTFSC      STATUS+0, 2
 	GOTO       L_main36
-;main.c,70 :: 		modo_actual++;
+;main.c,75 :: 		modo_actual++;
 	INCF       _modo_actual+0, 1
-;main.c,71 :: 		if (modo_actual > MODO_FRECUENCIMETRO)
+;main.c,76 :: 		if (modo_actual > MODO_FRECUENCIMETRO)
 	MOVF       _modo_actual+0, 0
 	SUBLW      2
 	BTFSC      STATUS+0, 0
 	GOTO       L_main37
-;main.c,72 :: 		modo_actual = MODO_CRONOMETRO;
+;main.c,77 :: 		modo_actual = MODO_CRONOMETRO;
 	CLRF       _modo_actual+0
 L_main37:
-;main.c,73 :: 		mostrar_modo(modo_actual);
+;main.c,78 :: 		mostrar_modo(modo_actual);
 	MOVF       _modo_actual+0, 0
 	MOVWF      FARG_mostrar_modo_modo+0
 	CALL       _mostrar_modo+0
-;main.c,74 :: 		Delay_ms(120);
+;main.c,79 :: 		Delay_ms(120);
 	MOVLW      39
 	MOVWF      R12
 	MOVLW      245
@@ -518,21 +524,21 @@ L_main38:
 	GOTO       L_main38
 	DECFSZ     R12, 1
 	GOTO       L_main38
-;main.c,75 :: 		}
+;main.c,80 :: 		}
 L_main36:
-;main.c,78 :: 		if (Pulsador_Start_Presionado()) {
+;main.c,83 :: 		if (Pulsador_Start_Presionado()) {
 	CALL       _Pulsador_Start_Presionado+0
 	MOVF       R0, 0
 	BTFSC      STATUS+0, 2
 	GOTO       L_main39
-;main.c,79 :: 		conteo_activo = !conteo_activo;
+;main.c,84 :: 		conteo_activo = !conteo_activo;
 	MOVLW
 	XORWF      _conteo_activo+0, 1
-;main.c,80 :: 		mostrar_modo(modo_actual);
+;main.c,85 :: 		mostrar_modo(modo_actual);
 	MOVF       _modo_actual+0, 0
 	MOVWF      FARG_mostrar_modo_modo+0
 	CALL       _mostrar_modo+0
-;main.c,81 :: 		Delay_ms(120);
+;main.c,86 :: 		Delay_ms(120);
 	MOVLW      39
 	MOVWF      R12
 	MOVLW      245
@@ -542,26 +548,26 @@ L_main40:
 	GOTO       L_main40
 	DECFSZ     R12, 1
 	GOTO       L_main40
-;main.c,82 :: 		}
+;main.c,87 :: 		}
 L_main39:
-;main.c,85 :: 		if (conteo_activo) {
+;main.c,90 :: 		if (conteo_activo) {
 	BTFSS      _conteo_activo+0, BitPos(_conteo_activo+0)
 	GOTO       L_main41
-;main.c,86 :: 		switch (modo_actual) {
+;main.c,91 :: 		switch (modo_actual) {
 	GOTO       L_main42
-;main.c,87 :: 		case MODO_CRONOMETRO:
+;main.c,92 :: 		case MODO_CRONOMETRO:
 L_main44:
-;main.c,89 :: 		break;
+;main.c,94 :: 		break;
 	GOTO       L_main43
-;main.c,90 :: 		case MODO_TEMPORIZADOR:
+;main.c,95 :: 		case MODO_TEMPORIZADOR:
 L_main45:
-;main.c,92 :: 		break;
+;main.c,97 :: 		break;
 	GOTO       L_main43
-;main.c,93 :: 		case MODO_FRECUENCIMETRO:
+;main.c,98 :: 		case MODO_FRECUENCIMETRO:
 L_main46:
-;main.c,95 :: 		break;
+;main.c,100 :: 		break;
 	GOTO       L_main43
-;main.c,96 :: 		}
+;main.c,101 :: 		}
 L_main42:
 	MOVF       _modo_actual+0, 0
 	XORLW      0
@@ -576,23 +582,136 @@ L_main42:
 	BTFSC      STATUS+0, 2
 	GOTO       L_main46
 L_main43:
-;main.c,97 :: 		}
+;main.c,102 :: 		}
 L_main41:
-;main.c,99 :: 		Delay_ms(10); // evitar uso excesivo de CPU
+;main.c,105 :: 		tecla = leer_teclado();
+	CALL       _leer_teclado+0
+;main.c,106 :: 		if (tecla == 'O') {
+	MOVF       R0, 0
+	XORLW      79
+	BTFSS      STATUS+0, 2
+	GOTO       L_main47
+;main.c,107 :: 		Delay_ms(20);
+	MOVLW      7
+	MOVWF      R12
+	MOVLW      125
+	MOVWF      R13
+L_main48:
+	DECFSZ     R13, 1
+	GOTO       L_main48
+	DECFSZ     R12, 1
+	GOTO       L_main48
+;main.c,108 :: 		while (leer_teclado() == 'O');
+L_main49:
+	CALL       _leer_teclado+0
+	MOVF       R0, 0
+	XORLW      79
+	BTFSS      STATUS+0, 2
+	GOTO       L_main50
+	GOTO       L_main49
+L_main50:
+;main.c,109 :: 		sistema_on = 0;
+	BCF        _sistema_on+0, BitPos(_sistema_on+0)
+;main.c,110 :: 		conteo_activo = 0;
+	BCF        _conteo_activo+0, BitPos(_conteo_activo+0)
+;main.c,111 :: 		LATC.F0 = 0; // Activo bajo: vuelve a modo selección
+	BCF        LATC+0, 0
+;main.c,112 :: 		Lcd_Cmd(_LCD_CLEAR);
+	MOVLW      1
+	MOVWF      FARG_Lcd_Cmd_out_char+0
+	CALL       _Lcd_Cmd+0
+;main.c,113 :: 		Lcd_Out(1,1,"Presione O (ON)");
+	MOVLW      1
+	MOVWF      FARG_Lcd_Out_row+0
+	MOVLW      1
+	MOVWF      FARG_Lcd_Out_column+0
+	MOVLW      ?lstr8_main+0
+	MOVWF      FARG_Lcd_Out_text+0
+	MOVLW      hi_addr(?lstr8_main+0)
+	MOVWF      FARG_Lcd_Out_text+1
+	CALL       _Lcd_Out+0
+;main.c,114 :: 		Lcd_Out(2,1,"para iniciar");
+	MOVLW      2
+	MOVWF      FARG_Lcd_Out_row+0
+	MOVLW      1
+	MOVWF      FARG_Lcd_Out_column+0
+	MOVLW      ?lstr9_main+0
+	MOVWF      FARG_Lcd_Out_text+0
+	MOVLW      hi_addr(?lstr9_main+0)
+	MOVWF      FARG_Lcd_Out_text+1
+	CALL       _Lcd_Out+0
+;main.c,116 :: 		while(!sistema_on) {
+L_main51:
+	BTFSC      _sistema_on+0, BitPos(_sistema_on+0)
+	GOTO       L_main52
+;main.c,117 :: 		tecla = leer_teclado();
+	CALL       _leer_teclado+0
+;main.c,118 :: 		if (tecla == 'O') {
+	MOVF       R0, 0
+	XORLW      79
+	BTFSS      STATUS+0, 2
+	GOTO       L_main53
+;main.c,119 :: 		Delay_ms(20);
+	MOVLW      7
+	MOVWF      R12
+	MOVLW      125
+	MOVWF      R13
+L_main54:
+	DECFSZ     R13, 1
+	GOTO       L_main54
+	DECFSZ     R12, 1
+	GOTO       L_main54
+;main.c,120 :: 		while (leer_teclado() == 'O');
+L_main55:
+	CALL       _leer_teclado+0
+	MOVF       R0, 0
+	XORLW      79
+	BTFSS      STATUS+0, 2
+	GOTO       L_main56
+	GOTO       L_main55
+L_main56:
+;main.c,121 :: 		sistema_on = 1;
+	BSF        _sistema_on+0, BitPos(_sistema_on+0)
+;main.c,122 :: 		LATC.F0 = 1; // Activo alto: ya seleccionó una opción
+	BSF        LATC+0, 0
+;main.c,123 :: 		mostrar_modo(modo_actual);
+	MOVF       _modo_actual+0, 0
+	MOVWF      FARG_mostrar_modo_modo+0
+	CALL       _mostrar_modo+0
+;main.c,124 :: 		Delay_ms(300);
+	MOVLW      98
+	MOVWF      R12
+	MOVLW      101
+	MOVWF      R13
+L_main57:
+	DECFSZ     R13, 1
+	GOTO       L_main57
+	DECFSZ     R12, 1
+	GOTO       L_main57
+	NOP
+	NOP
+;main.c,125 :: 		}
+L_main53:
+;main.c,126 :: 		}
+	GOTO       L_main51
+L_main52:
+;main.c,127 :: 		}
+L_main47:
+;main.c,129 :: 		Delay_ms(10); // evitar uso excesivo de CPU
 	MOVLW      4
 	MOVWF      R12
 	MOVLW      61
 	MOVWF      R13
-L_main47:
+L_main58:
 	DECFSZ     R13, 1
-	GOTO       L_main47
+	GOTO       L_main58
 	DECFSZ     R12, 1
-	GOTO       L_main47
+	GOTO       L_main58
 	NOP
 	NOP
-;main.c,100 :: 		}
+;main.c,130 :: 		}
 	GOTO       L_main34
-;main.c,101 :: 		}
+;main.c,131 :: 		}
 L_end_main:
 	GOTO       $+0
 ; end of _main

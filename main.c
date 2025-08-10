@@ -37,6 +37,10 @@ void main() {
     ANSELD = 0x00; // LCD digital
     ANSELC = 0x00; // Pulsadores digitales
 
+    // Configuración de RC0 como salida para señal de estado
+    TRISC.F0 = 0; // RC0 salida
+    LATC.F0 = 0;  // Activo bajo: en pantalla de selección
+
     // Inicialización de módulos
     LCD_P1_Init();
     Pulsadores_P1_Init();
@@ -58,6 +62,7 @@ void main() {
             Delay_ms(20);                 // debounce
             while (leer_teclado() == 'O'); // esperar liberación
             sistema_on = 1;
+            LATC.F0 = 1; // Activo alto: ya seleccionó una opción
             mostrar_modo(modo_actual);
             Delay_ms(300);
         }
@@ -93,6 +98,31 @@ void main() {
                 case MODO_FRECUENCIMETRO:
                     // TODO: lógica frecuencímetro
                     break;
+            }
+        }
+
+        // Si quieres permitir volver al modo selección con 'O':
+        tecla = leer_teclado();
+        if (tecla == 'O') {
+            Delay_ms(20);
+            while (leer_teclado() == 'O');
+            sistema_on = 0;
+            conteo_activo = 0;
+            LATC.F0 = 0; // Activo bajo: vuelve a modo selección
+            Lcd_Cmd(_LCD_CLEAR);
+            Lcd_Out(1,1,"Presione O (ON)");
+            Lcd_Out(2,1,"para iniciar");
+            // Espera nuevo ON
+            while(!sistema_on) {
+                tecla = leer_teclado();
+                if (tecla == 'O') {
+                    Delay_ms(20);
+                    while (leer_teclado() == 'O');
+                    sistema_on = 1;
+                    LATC.F0 = 1; // Activo alto: ya seleccionó una opción
+                    mostrar_modo(modo_actual);
+                    Delay_ms(300);
+                }
             }
         }
 
